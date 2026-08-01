@@ -1,8 +1,23 @@
 # seestar-siril-scripts
-Siril scripts for stacking Seestar deep-sky subs captured through N.I.N.A
 
-Latest scripts in Releases https://github.com/tbgh011/seestar-siril-scripts/releases
+Free, ready-to-run [Siril](https://siril.org/) scripts for stacking Seestar S50
+deep-sky subs captured through N.I.N.A. Each script takes you from raw FITS
+frames all the way to a finished master — calibration, plate solving,
+registration, and stacking — and every one is heavily commented so you can tune
+it to your data.
 
-Free, ready-to-run Siril scripts for stacking Seestar S50 deep-sky subs captured through N.I.N.A. Each takes you from raw FITS frames through calibration, plate solving, registration, and stacking to a finished master — and every script is heavily commented so you can tune it.
+**➡️ [Download the latest scripts from Releases](https://github.com/tbgh011/seestar-siril-scripts/releases/latest)**
 
-Requires Siril 1.3.6 or newer. Put your frames in a working directory with subfolders lights/, darks/, and bias/ (lights-only variants need just lights/), then run the script from Siril. If a download opens in the browser, right-click it and choose “Save link as”.
+## Requirements
+- **Siril 1.3.6 or newer**
+- Subs captured with a Seestar S50 through N.I.N.A (raw FITS frames)
+
+## Setup
+Put your frames in a working directory with these subfolders…
+    my-target/
+    ├── lights/    # always required
+    ├── darks/     # calibrated variants only
+    └── bias/      # calibrated variants only
+
+## Which script do I use?
+[single-target table + mosaic table with your descriptions]
