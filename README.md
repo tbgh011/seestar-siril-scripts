@@ -54,7 +54,8 @@ frames it adds, so only the **Lights Only** variants skip calibration frames.
 | --- | --- |
 | **Lights + Biases + Darks + BGE** ⭐ *recommended* | The everyday mosaic pipeline. Full calibration + background extraction flattens every tile before stitching so panel borders don't show, then grows the canvas and feathers the seams. Skips overlap normalization, so it's far faster on large panel counts. |
 | **Lights + Overlap-Norm + Biases + Darks + BGE** | The highest-quality mosaic, for a final render. Same calibration + BGE **plus overlap normalization** that matches panel levels using only their shared regions for truly seamless joins. This pass dominates runtime — budget well over an hour on 1,000+ frames. |
-| **Lights + Biases + Darks** | A calibrated mosaic **without** background extraction to pre-flatten tiles, so seams are more likely. Switch to an overlap-norm variant if panel boundaries show on harder data. |
+| **Lights + Biases + Darks** | A calibrated mosaic **without** background extraction to pre-flatten tiles, so seams are more likely. Try the **Feather 50** variant below first if panel boundaries show, then overlap-norm. |
+| **Lights + Biases + Darks + Feather 50** | The same script with the stack's edge blend widened from 15px to **50px**. With no background extraction to pre-flatten the tiles, the wider taper spreads residual level mismatch across more pixels, so seams largely disappear — and it costs nothing in runtime, unlike overlap normalization. Reach for this when the plain **Lights + Biases + Darks** mosaic shows panel edges. |
 | **Lights Only** | Stitches a mosaic from lights alone, no calibration frames. Plate-solves every tile, grows the canvas, and feathers seams, with sigma rejection as the only hot-pixel removal. Simplest to run, but expect some hot-pixel survivors on warm nights. |
 
 ## Links
