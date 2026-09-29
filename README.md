@@ -23,7 +23,7 @@ my-target/
 ├── lights/    # your light frames (always required)
 ├── darks/     # dark frames    (calibrated variants)
 ├── biases/    # bias frames    (calibrated variants)
-└── flats/     # flat frames    (flats variant only)
+└── flats/     # flat frames    (every calibrated mosaic + single-target Flats)
 ```
 
 Only add the folders your chosen script needs — **Lights Only** variants need
@@ -39,24 +39,50 @@ Pick a **single-target** script if your object fits in one field, or a
 Every script stacks your **lights** — the script name lists the calibration
 frames it adds, so only the **Lights Only** variants skip calibration frames.
 
+**Why flats matter:** vignetting is multiplicative and radial — darker corners
+on every sub. Stack normalization, a background fit, overlap normalization, and
+feathering all adjust levels or planes, so none of them can remove it; only
+flats can. In a mosaic those dark corners line up with the panel borders and
+show as seams, which is why every calibrated mosaic script uses flats as of
+v1.3.
+
 ### Single-target · one field
 
 | Script | Best for |
 | --- | --- |
-| **Lights + Biases + Darks + Flats** ⭐ *recommended* | The most complete calibration. Adds **flats** to correct vignetting and dust shadows on top of bias + matched-dark subtraction and cosmetic hot-pixel correction, then registers and stacks. No background extraction — run BGE yourself on the finished master. Needs bias, dark, **and flat** frames. |
-| **Lights + Biases + Darks + BGE** | The best choice when you don't shoot flats. Full calibration (dark optimization + cosmetic correction), removes the sky gradient from every sub, then runs roundness-filtered registration and stacking. Use when you have matched bias and dark frames. |
+| **Lights + Biases + Darks + Flats** ⭐ *recommended* | The most complete calibration. **Flats** correct vignetting and dust shadows on top of bias subtraction, dark optimization, and cosmetic hot-pixel correction, then plate-solve, roundness-filtered registration, and stacking. No background extraction — run BGE yourself on the finished master. Needs bias, dark, **and flat** frames. |
+| **Lights + Biases + Darks + BGE** | The best choice when you don't shoot flats. Full calibration, removes the sky gradient from every sub, then registers and stacks. Vignetting stays in the stack as a falloff toward the edges. |
 | **Lights + Biases + Darks** | Same calibration and stacking, but **skips** background extraction so each frame's gradient stays intact. Choose this if you prefer to remove gradients yourself later. |
-| **Lights Only** | No calibration frames — plate solving, roundness filtering, and sigma rejection at the stack are the only hot-pixel cleanup. Rejection relies on dither moving hot pixels between frames, so use this **only when you dithered**. |
+| **Lights Only** | No calibration frames — plate solving, roundness filtering, and sigma rejection at the stack are the only hot-pixel cleanup. Rejection relies on dither moving hot pixels between frames, so use this **only when you dithered** (or when a meridian flip rotated half the session). |
 
 ### Mosaic · multi-panel
 
+Every calibrated mosaic script needs `biases/`, `darks/`, **and** `flats/`.
+
 | Script | Best for |
 | --- | --- |
-| **Lights + Biases + Darks + BGE** ⭐ *recommended* | The everyday mosaic pipeline. Full calibration + background extraction flattens every tile before stitching so panel borders don't show, then grows the canvas and feathers the seams. Skips overlap normalization, so it's far faster on large panel counts. |
-| **Lights + Overlap-Norm + Biases + Darks + BGE** | The highest-quality mosaic, for a final render. Same calibration + BGE **plus overlap normalization** that matches panel levels using only their shared regions for truly seamless joins. This pass dominates runtime — budget well over an hour on 1,000+ frames. |
-| **Lights + Biases + Darks** | A calibrated mosaic **without** background extraction to pre-flatten tiles, so seams are more likely. Try the **Feather 50** variant below first if panel boundaries show, then overlap-norm. |
-| **Lights + Biases + Darks + Feather 50** | The same script with the stack's edge blend widened from 15px to **50px**. With no background extraction to pre-flatten the tiles, the wider taper spreads residual level mismatch across more pixels, so seams largely disappear — and it costs nothing in runtime, unlike overlap normalization. Reach for this when the plain **Lights + Biases + Darks** mosaic shows panel edges. |
-| **Lights Only** | Stitches a mosaic from lights alone, no calibration frames. Plate-solves every tile, grows the canvas, and feathers seams, with sigma rejection as the only hot-pixel removal. Simplest to run, but expect some hot-pixel survivors on warm nights. |
+| **Lights + Biases + Darks + Flats + BGE · Feather 50** ⭐ *recommended* | The everyday mosaic pipeline. Full calibration with flats, then background extraction flattens every tile before stitching, and a 50px feather blends the seams. Skips overlap normalization, so it's fast on large panel counts. Best when the target fills only part of each frame. |
+| **Lights + Biases + Darks + Flats · Feather 15** | Same calibration with flats, but **no** per-tile background extraction, so each tile keeps its own sky gradient and seams are more likely. Use it when you'd rather do BGE once on the finished mosaic. Read the script's sanity-check notes: with no BGE, a mis-built master dark won't announce itself. |
+| **Overlap-Norm + Lights + Biases + Darks + Flats + BGE · Feather 15** | The highest-quality mosaic for small-to-medium targets, for a final render. Same as the recommended script **plus overlap normalization**, which matches panel levels using only their shared regions. This pass dominates runtime — budget well over an hour on 1,000+ frames. |
+| **Overlap-Norm + Lights + Biases + Darks + Flats · Feather 50** | For **large targets that fill the frame** (M31, big nebulae). Per-tile BGE is off by default, because on those targets the background plane follows the target instead of the sky and carves hard seams and dark halos that overlap normalization can't repair. Overlap normalization and a 50px feather match the panels instead; do BGE once on the finished mosaic. Slow — same runtime warning as above. |
+| **Lights Only** | Stitches a mosaic from lights alone, no calibration frames. Plate-solves every tile, grows the canvas, and feathers seams, with sigma rejection as the only hot-pixel removal. Simplest to run, but expect hot-pixel survivors on warm nights and vignetting seams at panel borders. |
+
+### Output filenames
+
+Each script saves its result in your working directory, named from the FITS
+headers — object, frame count, exposure, sensor temperature, and date — with a
+tag that tells you which script made it:
+
+| Tag | Script |
+| --- | --- |
+| `_FLAT_` | Single-target Lights + Biases + Darks + Flats |
+| `_BGE_` | Single-target Lights + Biases + Darks + BGE |
+| `_cal_` | Single-target Lights + Biases + Darks |
+| `_nocal_` | Lights Only (single-target or mosaic) |
+| `_FLAT-BGE_` | Mosaic Lights + Biases + Darks + Flats + BGE |
+| `_FLAT-cal_` | Mosaic Lights + Biases + Darks + Flats |
+| `_NORM-BGE-ovl_` | Mosaic Overlap-Norm + Flats + BGE |
+| `_NORM-ovl_` | Mosaic Overlap-Norm + Flats |
 
 ## Links
 
