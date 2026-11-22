@@ -93,7 +93,7 @@ tag that tells you which script made it:
 | `_nocal_` | Lights Only (single-target or mosaic) |
 | `_FLAT-BGE_` | Mosaic Lights + Biases + Darks + Flats + BGE |
 | `_FLAT-cal_` | Mosaic Lights + Biases + Darks + Flats |
-| `_NORM-BGE-ovl_` | Mosaic Overlap-Norm + Flats + BGE · Feather 15 |
+| `_NORM-BGE-ovl-f15_` | Mosaic Overlap-Norm + Flats + BGE · Feather 15 |
 | `_NORM-BGE-ovl-f50_` | Mosaic Overlap-Norm + Flats + BGE · Feather 50 |
 | `_NORM-ovl_` | Mosaic Overlap-Norm + Flats · Feather 50 |
 
