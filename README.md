@@ -67,6 +67,17 @@ Every calibrated mosaic script needs `biases/`, `darks/`, **and** `flats/`.
 | **Overlap-Norm + Lights + Biases + Darks + Flats + BGE · Feather 15** | The highest-quality mosaic for small-to-medium targets, for a final render. Same as the recommended script **plus overlap normalization**, which matches panel levels using only their shared regions. This pass dominates runtime — budget well over an hour on 1,000+ frames. |
 | **Lights Only** | Stitches a mosaic from lights alone, no calibration frames. Plate-solves every tile, grows the canvas, and feathers seams, with sigma rejection as the only hot-pixel removal. Simplest to run, but expect hot-pixel survivors on warm nights and vignetting seams at panel borders. |
 
+**Overlap-norm variants need colour calibration afterwards.** Siril applies
+`-rgb_equal` only in its ordinary normalization path, never alongside
+`-overlap_norm` — the two are mutually exclusive branches, so the flag is
+silently ignored while the log still reports *RGB equalization ... enabled*.
+Both overlap-norm scripts therefore leave it off, and their stacks come out
+with the usual OSC green cast — roughly 20% green over red on Seestar data.
+Run **SPCC** on the finished mosaic (*Image Processing → Color Calibration →
+Spectrophotometric*; the stack keeps its WCS, so no re-solve is needed), or
+`rmgreen` for a quick cosmetic fix. Do it **before** background extraction.
+The other mosaic scripts apply `-rgb_equal` normally and are unaffected.
+
 ### Output filenames
 
 Each script saves its result in your working directory, named from the FITS
