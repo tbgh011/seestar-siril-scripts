@@ -66,18 +66,30 @@ Every calibrated mosaic script needs `biases/`, `darks/`, **and** `flats/`.
 | **Lights + Biases + Darks + Flats · Feather 15** | Same calibration with flats, but **no** per-tile background extraction, so each tile keeps its own sky gradient and seams are more likely. Use it when you'd rather do BGE once on the finished mosaic. Read the script's sanity-check notes: with no BGE, a mis-built master dark won't announce itself. |
 | **Overlap-Norm + Lights + Biases + Darks + Flats + BGE · Feather 15** | The highest-quality mosaic for small-to-medium targets, for a final render. Same as the recommended script **plus overlap normalization**, which matches panel levels using only their shared regions. This pass dominates runtime — budget well over an hour on 1,000+ frames. |
 | **Overlap-Norm + Lights + Biases + Darks + Flats + BGE · Feather 50** | Identical to the Feather 15 script above, but blends panel edges over 50px instead of 15px. The wider taper spreads any level mismatch that survives overlap normalization across more pixels, so seams are harder to see, and it costs no extra runtime. Start here; drop to Feather 15 if the wide blend visibly softens detail near the joins. |
+| **Overlap-Norm + Lights Only + BGE · Feather 50** | Lights-only, but with the full seam-handling kit: per-tile background extraction, overlap normalization and a 50px feather. Use when you have no calibration frames but panel borders still show. Hot pixels and vignetting remain — sigma rejection is the only hot-pixel removal, and no plane fit can undo radial falloff. |
 | **Lights Only** | Stitches a mosaic from lights alone, no calibration frames. Plate-solves every tile, grows the canvas, and feathers seams, with sigma rejection as the only hot-pixel removal. Simplest to run, but expect hot-pixel survivors on warm nights and vignetting seams at panel borders. |
 
-**Overlap-norm variants need color calibration afterwards.** Siril applies
+**A note on `-rgb_equal` and the overlap-norm scripts.** Siril applies
 `-rgb_equal` only in its ordinary normalization path, never alongside
 `-overlap_norm` — the two are mutually exclusive branches, so the flag is
 silently ignored while the log still reports *RGB equalization ... enabled*.
-Both overlap-norm scripts therefore leave it off, and their stacks come out
-with the usual OSC green cast — roughly 20% green over red on Seestar data.
-Run **SPCC** on the finished mosaic (*Image Processing → Color Calibration →
-Spectrophotometric*; the stack keeps its WCS, so no re-solve is needed), or
-`rmgreen` for a quick cosmetic fix. Do it **before** background extraction.
-The other mosaic scripts apply `-rgb_equal` normally and are unaffected.
+Every overlap-norm script therefore leaves it off. What that costs you depends
+on whether the script also does background extraction:
+
+- **With BGE** (the two `+ BGE` scripts and the lights-only one): nothing is
+  lost. `seqsubsky` subtracts a background plane *per channel*, which already
+  equalizes the channel backgrounds. A 697-frame Seestar mosaic measured
+  R 200.9 / G 200.5 / B 200.1 — neutral to within half a percent.
+- **Without BGE** (*Overlap-Norm + Flats · Feather 50*): nothing equalizes the
+  channels, and an OSC stack lands with a strong green cast — the same mosaic
+  measured R 170.7 / G 206.1 / B 191.1, green about 20% over red. Run **SPCC**
+  (*Image Processing → Color Calibration → Spectrophotometric*; the stack keeps
+  its WCS, so no re-solve), or `rmgreen` for a quick cosmetic fix, **before**
+  background extraction.
+
+SPCC is worth running on any of them for true photometric color; only the
+no-BGE script needs it to remove a cast. The non-overlap mosaic scripts apply
+`-rgb_equal` normally and are unaffected throughout.
 
 ### Output filenames
 
@@ -91,6 +103,7 @@ tag that tells you which script made it:
 | `_BGE_` | Single-target Lights + Biases + Darks + BGE |
 | `_cal_` | Single-target Lights + Biases + Darks |
 | `_nocal_` | Lights Only (single-target or mosaic) |
+| `_nocal-NORM-BGE-ovl-f50_` | Mosaic Overlap-Norm + Lights Only + BGE · Feather 50 |
 | `_FLAT-BGE_` | Mosaic Lights + Biases + Darks + Flats + BGE |
 | `_FLAT-cal_` | Mosaic Lights + Biases + Darks + Flats |
 | `_NORM-BGE-ovl-f15_` | Mosaic Overlap-Norm + Flats + BGE · Feather 15 |
