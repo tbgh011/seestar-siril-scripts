@@ -68,7 +68,7 @@ Every calibrated mosaic script needs `biases/`, `darks/`, **and** `flats/`.
 | **Overlap-Norm + Lights + Biases + Darks + Flats + BGE · Feather 50** | Identical to the Feather 15 script above, but blends panel edges over 50px instead of 15px. The wider taper spreads any level mismatch that survives overlap normalization across more pixels, so seams are harder to see, and it costs no extra runtime. Start here; drop to Feather 15 if the wide blend visibly softens detail near the joins. |
 | **Lights Only** | Stitches a mosaic from lights alone, no calibration frames. Plate-solves every tile, grows the canvas, and feathers seams, with sigma rejection as the only hot-pixel removal. Simplest to run, but expect hot-pixel survivors on warm nights and vignetting seams at panel borders. |
 
-**Overlap-norm variants need colour calibration afterwards.** Siril applies
+**Overlap-norm variants need color calibration afterwards.** Siril applies
 `-rgb_equal` only in its ordinary normalization path, never alongside
 `-overlap_norm` — the two are mutually exclusive branches, so the flag is
 silently ignored while the log still reports *RGB equalization ... enabled*.
