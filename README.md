@@ -65,6 +65,7 @@ Every calibrated mosaic script needs `biases/`, `darks/`, **and** `flats/`.
 | **Overlap-Norm + Lights + Biases + Darks + Flats · Feather 50** ⭐ *recommended* | For **large targets that fill the frame** (M31, big nebulae). Per-tile BGE is off by default, because on those targets the background plane follows the target instead of the sky and carves hard seams and dark halos that overlap normalization can't repair. Overlap normalization and a 50px feather match the panels instead; do BGE once on the finished mosaic. Slow — same runtime warning as above. |
 | **Lights + Biases + Darks + Flats · Feather 15** | Same calibration with flats, but **no** per-tile background extraction, so each tile keeps its own sky gradient and seams are more likely. Use it when you'd rather do BGE once on the finished mosaic. Read the script's sanity-check notes: with no BGE, a mis-built master dark won't announce itself. |
 | **Overlap-Norm + Lights + Biases + Darks + Flats + BGE · Feather 15** | The highest-quality mosaic for small-to-medium targets, for a final render. Same as the recommended script **plus overlap normalization**, which matches panel levels using only their shared regions. This pass dominates runtime — budget well over an hour on 1,000+ frames. |
+| **Overlap-Norm + Lights + Biases + Darks + Flats + BGE · Feather 50** | Identical to the Feather 15 script above, but blends panel edges over 50px instead of 15px. The wider taper spreads any level mismatch that survives overlap normalization across more pixels, so seams are harder to see, and it costs no extra runtime. Start here; drop to Feather 15 if the wide blend visibly softens detail near the joins. |
 | **Lights Only** | Stitches a mosaic from lights alone, no calibration frames. Plate-solves every tile, grows the canvas, and feathers seams, with sigma rejection as the only hot-pixel removal. Simplest to run, but expect hot-pixel survivors on warm nights and vignetting seams at panel borders. |
 
 **Overlap-norm variants need colour calibration afterwards.** Siril applies
@@ -92,8 +93,9 @@ tag that tells you which script made it:
 | `_nocal_` | Lights Only (single-target or mosaic) |
 | `_FLAT-BGE_` | Mosaic Lights + Biases + Darks + Flats + BGE |
 | `_FLAT-cal_` | Mosaic Lights + Biases + Darks + Flats |
-| `_NORM-BGE-ovl_` | Mosaic Overlap-Norm + Flats + BGE |
-| `_NORM-ovl_` | Mosaic Overlap-Norm + Flats |
+| `_NORM-BGE-ovl_` | Mosaic Overlap-Norm + Flats + BGE · Feather 15 |
+| `_NORM-BGE-ovl-f50_` | Mosaic Overlap-Norm + Flats + BGE · Feather 50 |
+| `_NORM-ovl_` | Mosaic Overlap-Norm + Flats · Feather 50 |
 
 ## Links
 
